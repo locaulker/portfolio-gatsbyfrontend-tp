@@ -1,3 +1,15 @@
+let activeEnv =
+  process.env.GATSBY_ACTIVE_ENV || process.env.NODE_ENV || "development"
+console.log(`Using environment config: '${activeEnv}'`)
+
+require("dotenv").config({
+  path: `.env.${activeEnv}`,
+})
+
+console.log(
+  `This WordPress Endpoint is used: '${process.env.WORDPRESS_BASE_URL}'`
+)
+
 module.exports = {
   siteMetadata: {
     title: `Gatsby Default Starter`,
@@ -27,6 +39,42 @@ module.exports = {
         icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
       },
     },
+
+    {
+      resolve: "gatsby-source-wordpress",
+      options: {
+        // I have created a dummy site for us to use with the plugins we discussed
+        baseUrl: `${process.env.WORDPRESS_BASE_URL}`,
+        protocol: "http",
+        hostingWPCOM: false,
+        // We will be using some advanced custom fields
+        useACF: true,
+        acfOptionPageIds: [],
+        verboseOutput: false,
+        perPage: 100,
+        searchAndReplaceContentUrls: {
+          // sourceUrl: "https://WORDPRESS_BASE_URL",
+          sourceUrl: `https://${process.env.WORDPRESS_BASE_URL}`,
+          replacementUrl: "https://localhost:8000",
+        },
+        // Set how many simultaneous requests are sent at once.
+        concurrentRequests: 10,
+        includedRoutes: [
+          "**/categories",
+          "**/posts",
+          "**/pages",
+          "**/media",
+          "**/tags",
+          "**/taxonomies",
+          "**/users",
+        ],
+        excludedRoutes: [],
+        normalizer: function ({ entities }) {
+          return entities
+        },
+      },
+    },
+
     // this (optional) plugin enables Progressive Web App + Offline functionality
     // To learn more, visit: https://gatsby.dev/offline
     // `gatsby-plugin-offline`,
